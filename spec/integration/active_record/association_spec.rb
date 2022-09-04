@@ -317,6 +317,15 @@ if active_record?
         expect(Bullet::Detector::Association).to be_completely_preloading_associations
       end
 
+      it 'should not detect preload with inversed access user => category' do
+        Category.connection.clear_query_cache
+        Category.find(1).users.includes(:submission).each { |user| user.category.id; user.submission.id }
+        Bullet::Detector::UnusedEagerLoading.check_unused_preload_associations
+        expect(Bullet::Detector::Association).not_to be_has_unused_preload_associations
+
+        expect(Bullet::Detector::Association).to be_completely_preloading_associations
+      end
+
       it 'should not detect newly assigned object in an after_save' do
         new_post = Post.new(category: Category.first)
 
